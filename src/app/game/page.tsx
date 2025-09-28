@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { createDeck, shuffleDeck, Card } from '@/lib/cards';
 import CardComponent from '@/components/Card';
 import GameTable from '@/components/GameTable';
@@ -39,12 +40,12 @@ export default function GamePage() {
           
           {/* Back to Home Button */}
           <div className="mt-4">
-            <a 
+            <Link 
               href="/" 
               className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors"
             >
               ← Back to Home
-            </a>
+            </Link>
           </div>
         </div>
 

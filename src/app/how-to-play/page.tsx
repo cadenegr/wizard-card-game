@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function HowToPlayPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-black text-white p-8">
@@ -11,12 +13,12 @@ export default function HowToPlayPage() {
           
           {/* Back to Home Button */}
           <div className="mt-4">
-            <a 
+            <Link 
               href="/" 
               className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors"
             >
               ← Back to Home
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -215,12 +217,12 @@ export default function HowToPlayPage() {
           </a>
           
           <div>
-            <a 
+            <Link 
               href="/" 
               className="px-6 py-2 bg-purple-700 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors"
             >
               ← Back to Home
-            </a>
+            </Link>
           </div>
         </div>
       </div>
