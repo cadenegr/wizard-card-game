@@ -9,8 +9,11 @@ export default function Home() {
         
         <div className="bg-black/40 backdrop-blur-sm border border-purple-600/30 rounded-xl p-8 max-w-2xl mx-auto">
           <h2 className="text-3xl font-serif text-amber-300 mb-6">Enter the Realm of Magic</h2>
-          <p className="text-lg text-purple-200 leading-relaxed mb-8">
+          <p className="text-lg text-purple-200 leading-relaxed mb-4">
             Master the ancient art of prediction and strategy in this enchanting card game.
+          </p>
+          <p className="text-sm text-green-400 mb-8 font-semibold">
+            🌐 LIVE ON THE INTERNET! By Carlos Denegri. 🌐
           </p>
           
           <div className="space-y-4">
