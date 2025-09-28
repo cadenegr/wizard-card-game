@@ -2,9 +2,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-black text-white">
       <div className="container mx-auto p-8 text-center">
-        <h1 className="text-6xl font-serif font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-300">
+        <h1 className="text-6xl font-serif font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-300">
           ✨ WIZARD ✨
         </h1>
+        <p className="text-xl text-purple-300 mb-8 font-light">The Ultimate Prediction Card Game</p>
         
         <div className="bg-black/40 backdrop-blur-sm border border-purple-600/30 rounded-xl p-8 max-w-2xl mx-auto">
           <h2 className="text-3xl font-serif text-amber-300 mb-6">Enter the Realm of Magic</h2>
