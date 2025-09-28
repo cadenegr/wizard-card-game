@@ -1,47 +1,114 @@
-<!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
-- [x] Verify that the copilot-instructions.md file in the .github directory is created.
+# �� WIZARD Card Game - Copilot Instructions
 
-- [x] Clarify Project Requirements
-	<!-- Project type: Next.js website with TypeScript and Tailwind CSS -->
+## 🎯 Project Overview
+**WIZARD Card Game Website** - A complete web-based implementation of the classic WIZARD card game using modern industry-standard technologies.
 
-- [x] Scaffold the Project
-	<!-- Next.js project successfully created with TypeScript, Tailwind CSS, ESLint, App Router, and src directory structure -->
+**Live Website**: https://wizard-card-game.vercel.app/
+**Repository**: https://github.com/cadenegr/wizard-card-game
+**Status**: ✅ DEPLOYED AND FUNCTIONAL
 
-- [ ] Customize the Project
-	<!--
-	Verify that all previous steps have been completed successfully and you have marked the step as completed.
-	Develop a plan to modify codebase according to user requirements.
-	Apply modifications using appropriate tools and user-provided references.
-	Skip this step for "Hello World" projects.
-	-->
+## 🏗️ Technical Stack
+- **Framework**: Next.js 15.5.4 (App Router, Turbopack)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Deployment**: Vercel (auto-deploy from GitHub)
+- **Version Control**: Git with comprehensive safety practices
 
-- [ ] Install Required Extensions
-	<!-- ONLY install extensions provided mentioned in the get_project_setup_info. Skip this step otherwise and mark as completed. -->
+## 📁 Project Structure
+```
+wizard-card-game/
+├── src/app/
+│   ├── page.tsx              # Home page with magical theme
+│   ├── game/page.tsx         # Game table with card dealing
+│   └── how-to-play/page.tsx  # Complete game rules
+├── src/components/
+│   ├── Card.tsx              # Visual card component
+│   └── GameTable.tsx         # Stone table with 6 player mantles
+├── src/lib/
+│   └── cards.ts              # Card logic, deck creation, shuffling
+├── SAFE_EDITING_GUIDE.md     # File editing safety procedures
+├── COMMANDS.md               # Quick command reference
+└── DEPLOYMENT_GUIDE.md       # Deployment instructions
+```
 
-- [ ] Compile the Project
-	<!--
-	Verify that all previous steps have been completed.
-	Install any missing dependencies.
-	Run diagnostics and resolve any issues.
-	Check for markdown files in project folder for relevant instructions on how to do this.
-	-->
+## ✅ Completed Features
+- [x] **Complete WIZARD card deck**: 60 cards (52 numbered + 4 wizards + 4 jesters)
+- [x] **Stone game table**: Realistic appearance with 6 dining-style player mantles
+- [x] **Card dealing system**: Shuffle, deal, reset functionality with statistics
+- [x] **Multi-page navigation**: Home, game, and rules pages
+- [x] **Comprehensive rules page**: Official WIZARD game documentation
+- [x] **Responsive design**: Works on desktop and mobile
+- [x] **Production deployment**: Live on Vercel with auto-deploy
+- [x] **Git safety practices**: Version control with recovery procedures
 
-- [ ] Create and Run Task
-	<!--
-	Verify that all previous steps have been completed.
-	Check https://code.visualstudio.com/docs/debugtest/tasks to determine if the project needs a task. If so, use the create_and_run_task to create and launch a task based on package.json, README.md, and project structure.
-	Skip this step otherwise.
-	 -->
+## 🚧 Current Status & Next Phase Planning
 
-- [ ] Launch the Project
-	<!--
-	Verify that all previous steps have been completed.
-	Prompt user for debug mode, launch only if confirmed.
-	 -->
+### Phase 1: Foundation ✅ COMPLETE
+- Basic website structure
+- Card game mechanics
+- Deployment pipeline
 
-- [ ] Ensure Documentation is Complete
-	<!--
-	Verify that all previous steps have been completed.
-	Verify that README.md and the copilot-instructions.md file in the .github directory exists and contains current project information.
-	Clean up the copilot-instructions.md file in the .github directory by removing all HTML comments.
-	 -->
+### Phase 2: User System (PLANNED)
+- **Authentication**: NextAuth.js + Supabase
+- **User accounts**: Sign up, login, profiles
+- **Game history**: Save completed games, statistics
+- **Database**: Cloud PostgreSQL for user data
+
+### Phase 3: Social Features (FUTURE)
+- **Multiplayer**: Real-time game rooms
+- **Leaderboards**: Global and friend rankings
+- **Social interactions**: Friend system, challenges
+
+## 🛡️ Critical Safety Practices
+
+### File Editing Workflow
+```bash
+# ALWAYS use this sequence:
+pkill -f "next dev"                    # Stop server first
+git add . && git commit -m "checkpoint" # Create safety checkpoint
+# Make changes using proper tools
+npm run dev                            # Test locally
+git add . && git commit -m "description" && git push origin main # Deploy live
+```
+
+### Emergency Recovery
+```bash
+git restore filename.tsx               # Restore single file
+git restore .                          # Restore all changes
+git reset --hard HEAD                  # Nuclear option
+```
+
+## 🎮 Game Mechanics Implementation
+- **Card Types**: Numbered (1-13), Wizards (always high), Jesters (always low)
+- **Suits**: Blue, Red, Yellow, Green with distinct visual styling
+- **Dealing**: Interactive card dealing with remaining deck counts
+- **Visual Design**: Magical theme with gradients and professional styling
+
+## 🌐 Deployment Pipeline
+- **GitHub**: Source code repository with auto-sync
+- **Vercel**: Production hosting with automatic deployments
+- **Domain**: wizard-card-game.vercel.app (custom domain ready)
+- **SSL**: Automatic HTTPS with global CDN
+
+## 📋 Development Guidelines
+1. **Always stop server before file edits** to prevent corruption
+2. **Use Git checkpoints** before major changes
+3. **Test locally first** before pushing to production
+4. **Follow Next.js best practices**: Use Link for navigation, proper imports
+5. **Reference safety guides** in project root for procedures
+
+## 🎯 Future Development Priorities
+1. **User Authentication**: Implement login/signup system
+2. **Database Integration**: Store user data and game history
+3. **Real-time Features**: WebSocket integration for multiplayer
+4. **Performance Optimization**: Advanced Next.js features
+5. **SEO Enhancement**: Meta tags, sitemap, analytics
+
+## 💡 Technical Notes for Copilot
+- **File Corruption History**: Previous issues with replace_string_in_file tool resolved through proper server shutdown procedures
+- **Build Requirements**: ESLint configured to ignore apostrophe escaping for deployment
+- **Component Architecture**: Reusable Card and GameTable components with TypeScript interfaces
+- **State Management**: React hooks for game state, no external state library needed yet
+
+---
+**Last Updated**: Session ending - Project ready for next development phase
