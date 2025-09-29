@@ -1,6 +1,13 @@
 # 🚀 Quick Command Cheat Sheet
 
 **💡 New!** Check `GLOSSARY.md` for technical term definitions!
+# Quick term lookup
+cat GLOSSARY.md | grep -i "deployment"
+
+# Browse full glossary  
+less GLOSSARY.md
+
+# Keep it open in VS Code for reference
 
 ## Most Common Commands (Copy & Paste Ready)
 
