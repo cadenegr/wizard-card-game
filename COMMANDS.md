@@ -1,5 +1,7 @@
 # 🚀 Quick Command Cheat Sheet
 
+**💡 New!** Check `GLOSSARY.md` for technical term definitions!
+
 ## Most Common Commands (Copy & Paste Ready)
 
 ### Safe Edit Process
@@ -54,5 +56,18 @@ nano src/app/game/page.tsx      # Game page
 nano src/components/Card.tsx    # Card component
 ```
 
+### Quick References
+```bash
+# View technical terms
+cat GLOSSARY.md
+
+# View full editing guide  
+cat SAFE_EDITING_GUIDE.md
+
+# View deployment guide
+cat DEPLOYMENT_GUIDE.md
+```
+
 ---
 **💡 Bookmark this file! Keep it open when coding.**
+**📚 Don't know a term? Check GLOSSARY.md!**
