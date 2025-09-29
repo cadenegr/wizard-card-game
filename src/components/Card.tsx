@@ -1,16 +1,20 @@
-import { Card } from '@/lib/cards';
+import { Card } from '@/lib/gameTypes';
 
 interface CardProps {
   card: Card;
   isRevealed: boolean;
   className?: string;
+  onClick?: () => void;  // For interactive cards
 }
 
-export default function CardComponent({ card, isRevealed, className = "" }: CardProps) {
+export default function CardComponent({ card, isRevealed, className = "", onClick }: CardProps) {
   if (!isRevealed) {
     // Card back design
     return (
-      <div className={`w-24 h-36 bg-gradient-to-br from-purple-800 to-purple-900 border-2 border-purple-600 rounded-lg flex items-center justify-center shadow-lg ${className}`}>
+      <div 
+        className={`w-24 h-36 bg-gradient-to-br from-purple-800 to-purple-900 border-2 border-purple-600 rounded-lg flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 transition-transform ${className}`}
+        onClick={onClick}
+      >
         <div className="text-purple-300 text-xs text-center">
           <div className="mb-1">✨</div>
           <div className="text-[8px]">WIZARD</div>
@@ -24,7 +28,7 @@ export default function CardComponent({ card, isRevealed, className = "" }: Card
   const getSymbol = () => {
     if (card.type === 'wizard') return '🧙‍♂️';
     if (card.type === 'jester') return '🃏';
-    return card.value;
+    return card.value?.toString() || '?';
   };
 
   return (
@@ -38,7 +42,7 @@ export default function CardComponent({ card, isRevealed, className = "" }: Card
       <div className={`text-xs ${card.textColor} font-semibold`}>
         {card.type === 'wizard' ? 'WIZARD' :
          card.type === 'jester' ? 'JESTER' :
-         card.suit.toUpperCase()}
+         card.suit?.toUpperCase() || 'CARD'}
       </div>
     </div>
   );

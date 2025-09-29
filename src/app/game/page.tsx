@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { createDeck, shuffleDeck, Card } from '@/lib/cards';
+import { createDeck, shuffleDeck } from '@/lib/cards';
+import { Card } from '@/lib/gameTypes';
 import CardComponent from '@/components/Card';
 import GameTable from '@/components/GameTable';
 

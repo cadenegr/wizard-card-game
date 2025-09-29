@@ -1,15 +1,5 @@
-// Card types and interfaces
-export type Suit = 'blue' | 'red' | 'yellow' | 'green';
-export type CardType = 'number' | 'wizard' | 'jester';
-
-export interface Card {
-  id: string;
-  suit: Suit;
-  value: number | 'W' | 'J';
-  type: CardType;
-  backgroundColor: string;
-  textColor: string;
-}
+// Import types from gameTypes for consistency
+import { Card, Suit } from './gameTypes';
 
 // Create the full deck of 60 cards
 export function createDeck(): Card[] {
@@ -36,8 +26,8 @@ export function createDeck(): Card[] {
     const colors = getSuitColors(suit);
     cards.push({
       id: `${suit}-wizard`,
-      suit,
-      value: 'W',
+      suit: null,  // Wizards have no suit
+      value: null,  // Wizards have no numerical value
       type: 'wizard',
       backgroundColor: colors.background,
       textColor: colors.text
@@ -49,8 +39,8 @@ export function createDeck(): Card[] {
     const colors = getSuitColors(suit);
     cards.push({
       id: `${suit}-jester`,
-      suit,
-      value: 'J',
+      suit: null,  // Jesters have no suit  
+      value: null,  // Jesters have no numerical value
       type: 'jester',
       backgroundColor: colors.background,
       textColor: colors.text
