@@ -306,8 +306,36 @@ This glossary contains all the technical terms we use in our project. Keep this 
 **CSS Grid** 📊
 - **What it is**: Modern 2D layout system for web pages
 - **Best for**: Table-like layouts, complex positioning
-- **Our use**: 3x3 grid for game table with semantic areas
+- **Our use**: 3x3 grid for game table with coordinate positioning
+- **Implementation**: `gridTemplateRows: '80px 1fr 80px'`, `gridTemplateColumns: '1fr 2fr 1fr'`
 - **Advantage**: No positioning conflicts, responsive by default
+
+**Coordinate Positioning** 📍
+- **What it is**: Using grid coordinates to place elements precisely
+- **Format**: `'1/1/2/2'` means row 1-2, column 1-2
+- **Example**: `gridArea: '1 / 2 / 2 / 3'` places element in top-center
+- **Benefit**: Precise control, visual clarity of positioning
+
+**Mirror Symmetry** 🪞
+- **What it is**: Layout where bottom elements mirror top elements vertically
+- **Implementation**: `isBottomSeat = position >= 4` with `flex-col-reverse`
+- **Visual result**: Top seats descend (Name → Cards), bottom seats ascend (Cards → Name)
+- **Key insight**: Not identical layout, but flipped/mirrored layout
+- **Perfect for**: Game tables where players face each other
+
+**Fixed Dimensions** 📐
+- **What it means**: Elements have consistent size regardless of container
+- **Example**: All mantles are 120x70px even if grid areas vary
+- **Problem solved**: Center seats no longer wider than side seats
+- **Implementation**: `style={{ width: '120px', height: '70px' }}`
+- **Benefit**: Uniform appearance, professional design
+
+**Perfect Centering** ⚡
+- **What it is**: Element precisely centered in container
+- **Implementation**: `absolute inset-0 flex items-center justify-center`
+- **Result**: Equal margins/padding on all sides
+- **Replaced**: Manual margins that caused asymmetry
+- **Visual outcome**: Perfectly balanced dark edges around table surface
 
 **Flexbox** 📦
 - **What it is**: Modern 1D layout system for arranging items
@@ -354,6 +382,28 @@ This glossary contains all the technical terms we use in our project. Keep this 
 - **Example**: `PlayerPositionProps` defines what data component needs
 - **Benefit**: Type safety, clear documentation, IDE support
 - **Professional standard**: Always define prop types
+
+---
+
+## 🔧 **LAYOUT TROUBLESHOOTING**
+
+**Grid Area Size Independence** 🎯
+- **Problem**: Component size varies based on grid area size
+- **Solution**: Fixed dimensions independent of container
+- **Example**: Mantles same size whether in narrow or wide grid areas
+- **Implementation**: Style object with fixed width/height
+
+**Visual Debugging** 🔍
+- **Technique**: Add colored borders to see layout structure
+- **Example**: `border: '2px solid red'` to visualize grid areas
+- **Benefit**: Immediately see layout conflicts and spacing issues
+- **Temporary**: Remove debug styles before production
+
+**Layout Conflicts** ⚔️
+- **What happens**: Multiple positioning systems fighting each other
+- **Common cause**: Mixing absolute positioning with CSS Grid
+- **Solution**: Choose one layout system and stick to it
+- **Our lesson**: CSS Grid + Flexbox works, avoid absolute positioning
 
 ---
 
@@ -516,20 +566,3 @@ This glossary contains all the technical terms we use in our project. Keep this 
 **💡 TIP**: Keep this file open when we work together. Ask "What does [term] mean?" anytime!
 
 **📝 NOTE**: We'll add more terms as we build new features. This glossary grows with your knowledge!
-
-My pasting at the end of our working session I will ask co pilot to update.
-
-Current Problem: "Magic Numbers" and Hardcoded Values
-This is called "spaghetti code" - messy, unpredictable, and hard to maintain.
-This is enterprise-level architecture! No more position tweaking needed - everything is mathematically precise and maintainable. 🎯
-
-Key Lesson: Start with configuration objects, not hardcoded values. This is how senior developers build scalable applications!
-Professional Lesson: This teaches us why CSS Grid and Flexbox were invented - to solve exactly these layout problems!
-
-EXCELLENT decision! You're thinking like a Senior Architect now! Let's eliminate ALL hardcoded positioning and build a truly professional framework.
-
-This is called "Clean Architecture Refactoring" - removing "technical debt" and building enterprise-grade foundations.
-"Code Review Process" - Catch inconsistent patterns
-"Linting Rules" - Prevent hardcoded positioning
-"Architecture Decision Records" - Document "why we use this approach"
-"Style Guides" - Enforce consistent layout methods

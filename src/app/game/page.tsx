@@ -82,17 +82,28 @@ export default function GamePage() {
     }
   };
 
-  const getPlayerAtPosition = (position: 1 | 2 | 3 | 5): Player | null => {
+  const getPlayerAtPosition = (position: 1 | 2 | 3 | 4 | 5 | 6): Player | null => {
     if (!gameState) return null;
     
-    // Clean Architecture: Human at position 5, bots at positions 1, 2, 3, with 4th bot at position 2
-    switch (position) {
-      case 1: return gameState.players[1] || null; // Bot 1 (index 1)
-      case 2: return gameState.players[3] || null; // Bot 3 (index 3) - temporarily show bot 3 at position 2
-      case 3: return gameState.players[2] || null; // Bot 2 (index 2)  
-      case 5: return gameState.players[0] || null; // Human player (index 0 - always first in array)
-      default: return null;
+    // Dynamic seat mapping based on number of players
+    const playerCount = gameState.players.length;
+    
+    if (playerCount === 4) {
+      // 4 players: seats 1, 2, 3, 5 (skip 4 and 6)
+      switch (position) {
+        case 1: return gameState.players[1] || null; // Bot 1 
+        case 2: return gameState.players[2] || null; // Bot 2
+        case 3: return gameState.players[3] || null; // Bot 3
+        case 5: return gameState.players[0] || null; // Human player (bottom center)
+        case 4:
+        case 6: return null; // Empty seats
+        default: return null;
+      }
     }
+    
+    // For other player counts, we'll add logic later
+    // For now, default to 4-player mapping
+    return null;
   };
 
   const getCurrentPlayerName = (): string => {
@@ -122,8 +133,13 @@ export default function GamePage() {
 
         <GameTable>
           {!gameState ? (
-            /* Game Setup */
-            <div className="flex items-center justify-center h-full">
+            /* Game Setup - Center in grid */
+            <div 
+              style={{ 
+                gridArea: '2 / 2 / 3 / 3' // Center - back to coordinates
+              }} 
+              className="w-full h-full flex items-center justify-center"
+            >
               <div className="bg-black/40 backdrop-blur-sm border border-purple-600/30 rounded-xl p-8 max-w-lg">
                 <h2 className="text-2xl font-serif text-amber-300 mb-4 text-center">Start a New Game</h2>
                 <p className="text-purple-200 mb-6 text-center">
@@ -140,11 +156,11 @@ export default function GamePage() {
               </div>
             </div>
           ) : (
-            /* Active Game - Simple Working Version */
+            /* Active Game - All elements as direct grid children */
             <>
-              {/* Player Positions - Simple Grid Layout */}
-              {[1, 2, 3, 5].map(position => {
-                const player = getPlayerAtPosition(position as 1 | 2 | 3 | 5);
+              {/* Player Positions - Check all 6 seats */}
+              {[1, 2, 3, 4, 5, 6].map(position => {
+                const player = getPlayerAtPosition(position as 1 | 2 | 3 | 4 | 5 | 6);
                 if (!player) return null;
                 
                 const isHuman = player.id === 'human';
@@ -155,7 +171,7 @@ export default function GamePage() {
                   <PlayerPosition
                     key={position}
                     player={player}
-                    position={position as 1 | 2 | 3 | 5}
+                    position={position as 1 | 2 | 3 | 4 | 5 | 6}
                     isCurrentPlayer={isCurrent}
                     isHumanPlayer={isHuman}
                     onCardPlay={playCard}
@@ -164,52 +180,93 @@ export default function GamePage() {
                 );
               })}
 
-              {/* Simple Center Elements */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="pointer-events-auto">
-                  {/* Game Info */}
-                  <div className="bg-black/60 backdrop-blur-sm border border-purple-600/30 rounded-xl p-4 mb-4 max-w-xs mx-auto text-center">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="text-amber-300">Round: {gameState.round}/13</div>
-                      <div className="text-purple-300">Phase: {gameState.phase}</div>
-                      <div className="text-blue-300">Trump: {gameState.trumpSuit || 'None'}</div>
-                      <div className="text-green-300">Turn: {getCurrentPlayerName()}</div>
+              {/* LEFT AREA: Game Status Info */}
+              <div 
+                style={{ 
+                  gridArea: '2 / 1 / 3 / 2' // Left area - back to coordinates
+                }} 
+                className="w-full h-full flex flex-col items-center justify-center gap-1 p-2"
+              >
+                <div className="bg-black/60 backdrop-blur-sm border border-purple-600/30 rounded-lg p-2 text-center w-full">
+                  <div className="text-xs space-y-1">
+                    <div className="text-amber-300">Round: {gameState.round}/13</div>
+                    <div className="text-purple-300">Phase: {gameState.phase}</div>
+                    <div className="text-blue-300">Trump: {gameState.trumpSuit || 'None'}</div>
+                    <div className="text-green-300">Turn: {getCurrentPlayerName()}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CENTER AREA: Trump Card + Deck + Played Cards Space */}
+              <div 
+                style={{ 
+                  gridArea: '2 / 2 / 3 / 3' // Center area - back to coordinates
+                }} 
+                className="w-full h-full flex items-center justify-center gap-4 p-2"
+              >
+                {/* Deck (left) */}
+                {gameState.deck && gameState.deck.length > 0 && (
+                  <div className="text-center">
+                    <div className="text-xs text-amber-300 mb-1">Deck ({gameState.deck.length})</div>
+                    <CardComponent
+                      card={{ 
+                        id: 'deck', 
+                        type: 'number', 
+                        value: 1, 
+                        suit: 'blue',
+                        backgroundColor: '#4C1D95',
+                        textColor: '#FFFFFF'
+                      }}
+                      isRevealed={false}
+                      className="w-12 h-16"
+                    />
+                  </div>
+                )}
+
+                {/* Played Cards Space (center) */}
+                <div className="flex-1 text-center">
+                  <div className="text-xs text-gray-400">Played Cards</div>
+                  <div className="h-16 border-2 border-dashed border-gray-600 rounded flex items-center justify-center">
+                    <span className="text-xs text-gray-500">Cards go here</span>
+                  </div>
+                </div>
+
+                {/* Trump Card (right) */}
+                {gameState.trumpCard && (
+                  <div className="text-center">
+                    <div className="text-xs text-amber-300 mb-1">Trump</div>
+                    <CardComponent
+                      card={gameState.trumpCard}
+                      isRevealed={true}
+                      className="w-12 h-16"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* RIGHT AREA: Bidding Interface */}
+              <div 
+                style={{ 
+                  gridArea: '2 / 3 / 3 / 4' // Right area - back to coordinates
+                }} 
+                className="w-full h-full flex flex-col items-center justify-center gap-2 p-2"
+              >
+                {gameState.phase === 'bidding' && !gameState.players.find(p => p.id === 'human')?.bid && (
+                  <div className="bg-black/60 backdrop-blur-sm border border-purple-600/30 rounded-lg p-3 w-full">
+                    <h3 className="text-sm font-serif text-amber-300 mb-2 text-center">Make Your Bid</h3>
+                    <div className="flex justify-center gap-1 flex-wrap">
+                      {Array.from({ length: gameState.round + 1 }, (_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => makeBid(i)}
+                          className="px-2 py-1 bg-purple-700 hover:bg-purple-600 text-white font-semibold rounded transition-colors text-xs"
+                        >
+                          {i}
+                        </button>
+                      ))}
                     </div>
                   </div>
-
-                  {/* Trump Card */}
-                  {gameState.trumpCard && (
-                    <div className="text-center mb-4">
-                      <div className="text-xs text-amber-300 mb-1">Trump</div>
-                      <CardComponent
-                        card={gameState.trumpCard}
-                        isRevealed={true}
-                        className="w-16 h-22 mx-auto"
-                      />
-                    </div>
-                  )}
-
-                  {/* Bidding Interface */}
-                  {gameState.phase === 'bidding' && !gameState.players.find(p => p.id === 'human')?.bid && (
-                    <div className="bg-black/60 backdrop-blur-sm border border-purple-600/30 rounded-xl p-6">
-                      <h3 className="text-lg font-serif text-amber-300 mb-4">Make Your Bid</h3>
-                      <p className="text-purple-200 mb-4 text-sm">
-                        How many tricks do you think you can win?
-                      </p>
-                      <div className="flex flex-wrap justify-center gap-2">
-                        {Array.from({ length: gameState.round + 1 }, (_, i) => (
-                          <button
-                            key={i}
-                            onClick={() => makeBid(i)}
-                            className="px-3 py-1 bg-purple-700 hover:bg-purple-600 text-white font-semibold rounded transition-colors text-sm"
-                          >
-                            {i}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
             </>
           )}

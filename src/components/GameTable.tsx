@@ -6,26 +6,35 @@ interface GameTableProps {
 export default function GameTable({ children, className = "" }: GameTableProps) {
   return (
     <div className={`w-full max-w-4xl mx-auto ${className}`}>
-      {/* Simple stone table - CSS Grid */}
-      <div className="bg-gradient-to-br from-stone-600 via-stone-700 to-stone-800 rounded-3xl p-8 shadow-2xl border-4 border-stone-500 min-h-[600px] relative">
+      {/* Stone table wrapper */}
+      <div 
+        className="bg-gradient-to-br from-stone-600 via-stone-700 to-stone-800 rounded-3xl shadow-2xl border-4 border-stone-500 relative"
+        style={{ 
+          height: '500px',
+          width: '700px',
+          margin: '0 auto'
+        }}
+      >
         
         {/* Stone texture */}
         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-stone-500/20 to-stone-900/40 rounded-3xl"></div>
         
-        {/* Table surface with simple grid */}
-        <div className="relative w-full h-full bg-gradient-to-br from-stone-500 via-stone-600 to-stone-700 rounded-2xl p-6 shadow-inner min-h-[550px]">
-          
-          {/* Simple CSS Grid - 3x3 Layout */}
+        {/* GameTable - PERFECTLY CENTERED */}
+        <div 
+          className="absolute inset-0 flex items-center justify-center"
+        >
           <div 
-            className="w-full h-full grid gap-4 min-h-[500px]"
+            className="relative"
             style={{
-              gridTemplateRows: '100px 1fr 100px',
+              width: '600px',
+              height: '400px', 
+              display: 'grid',
+              gridTemplateRows: '80px 1fr 80px', 
               gridTemplateColumns: '1fr 2fr 1fr',
-              gridTemplateAreas: `
-                "bot1   bot2    bot3"
-                "left   center  right"  
-                "empty  human   empty"
-              `
+              gap: '8px',
+              padding: '16px',
+              background: 'linear-gradient(135deg, #78716c 0%, #57534e 50%, #44403c 100%)',
+              borderRadius: '1rem'
             }}
           >
             {children}
