@@ -95,7 +95,7 @@ export class WizardGameEngine {
       this.setTrumpCard();
     }
 
-    return this.gameState;
+    return { ...this.gameState };
   }
 
   // Deal cards to all players
@@ -161,7 +161,7 @@ export class WizardGameEngine {
       this.startFirstTrick();
     }
 
-    return this.gameState;
+    return { ...this.gameState };
   }
 
   // Start the first trick of the round
@@ -218,7 +218,7 @@ export class WizardGameEngine {
       this.gameState.currentPlayerIndex = (this.gameState.currentPlayerIndex + 1) % this.gameState.numberOfPlayers;
     }
 
-    return this.gameState;
+    return { ...this.gameState };
   }
 
   // Check if a card can be played (following suit rules)
