@@ -75,7 +75,7 @@ export default function PlayerPosition({
         <div className="flex gap-1 justify-center items-center">
           {isHumanPlayer ? (
             // Human: Show actual cards
-            player.cards.slice(0, 3).map((card: Card, index: number) => (
+            player.cards.slice(0, 3).map((card: Card) => (
               <CardComponent
                 key={card.id}
                 card={card}

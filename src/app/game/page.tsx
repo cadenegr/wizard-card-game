@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Card, GameState, Player } from '@/lib/gameTypes';
+import { GameState, Player } from '@/lib/gameTypes';
 import { WizardGameEngine, createWizardGame } from '@/lib/gameEngine';
 import { BotAI } from '@/lib/botAI';
 import GameTable from '@/components/GameTable';

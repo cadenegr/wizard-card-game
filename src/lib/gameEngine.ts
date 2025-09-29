@@ -1,7 +1,8 @@
 // WIZARD Card Game - Core Game Engine
 // This handles all the game logic, state management, and rule enforcement
 
-import { Card, Player, GameState, Trick, GameRound, GameConfig } from './gameTypes';
+import { Card, Player, GameState, GameConfig, Trick, GameRound } from './gameTypes';
+import { BotAI } from './botAI';
 import { createDeck, shuffleDeck } from './cards';
 
 export class WizardGameEngine {
@@ -237,8 +238,7 @@ export class WizardGameEngine {
       }
 
       // Bot's turn - get bot decision
-      const { BotAI } = require('./botAI');
-      const botDecision = BotAI.makeDecision(currentPlayer, { ...this.gameState }, 'play');
+      const botDecision = BotAI.makeDecision(currentPlayer, { ...this.gameState }, 'play_card');
       
       if (botDecision.cardToPlay) {
         this.playCard(currentPlayer.id, botDecision.cardToPlay.id);
