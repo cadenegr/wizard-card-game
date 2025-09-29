@@ -96,6 +96,26 @@ git reset --hard HEAD                  # Nuclear option
 3. **Test locally first** before pushing to production
 4. **Follow Next.js best practices**: Use Link for navigation, proper imports
 5. **Reference safety guides** in project root for procedures
+6. **NEVER use hardcoded positioning** - Use CSS Grid + Flexbox + configuration objects
+7. **Avoid "magic numbers"** - All positioning values must be in config objects
+8. **Single Source of Truth** - One place for each layout definition
+9. **Simple over complex** - Don't over-engineer when simple solutions work
+10. **Clean Architecture** - Configuration-driven, modular, maintainable code
+
+## 🏗️ Architecture Standards (LEARNED IN SESSION)
+- **Layout System**: CSS Grid with semantic areas (`bot1`, `bot2`, `bot3`, `human`)
+- **Component Pattern**: Simple grid-based positioning, no React Portals unless necessary
+- **Configuration-Driven**: All layout rules in config objects, zero hardcoded values
+- **File Organization**: Keep components simple, avoid duplication (Clean*, Professional* versions)
+- **Anti-Patterns**: No absolute positioning, no magic numbers, no component duplication
+- **Code Quality**: Regular refactoring, remove technical debt, maintain clean codebase
+
+## 💡 Session Learnings Applied
+- **Fixed**: Positioning conflicts caused by hardcoded absolute positioning
+- **Simplified**: Removed overcomplicated portal architecture for simple CSS Grid
+- **Cleaned**: Eliminated duplicate components (Clean*, Professional* versions)
+- **Architecture**: Built configuration-driven layout system with semantic naming
+- **Lesson**: Sometimes "enterprise-grade" means "simple and maintainable", not "complex"
 
 ## 🎯 Future Development Priorities
 1. **User Authentication**: Implement login/signup system
