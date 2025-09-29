@@ -7,6 +7,7 @@ import { WizardGameEngine, createWizardGame } from '@/lib/gameEngine';
 import { BotAI } from '@/lib/botAI';
 import CardComponent from '@/components/Card';
 import GameTable from '@/components/GameTable';
+import PlayerPosition from '@/components/PlayerPosition';
 
 export default function GamePage() {
   // Game engine state
@@ -53,6 +54,11 @@ export default function GamePage() {
         }
       }
       
+      // After all bids, process any bot moves in playing phase
+      if (currentState.phase === 'playing') {
+        currentState = gameEngine.processBotMoves();
+      }
+      
       setGameState(currentState);
     } catch (error) {
       console.error('Bid error:', error);
@@ -65,15 +71,36 @@ export default function GamePage() {
     if (!gameEngine) return;
     
     try {
-      const updatedState = gameEngine.playCard('human', cardId);
+      let updatedState = gameEngine.playCard('human', cardId);
+      
+      // Process any pending bot moves
+      updatedState = gameEngine.processBotMoves();
+      
       setGameState(updatedState);
     } catch (error) {
       console.error('Play error:', error);
     }
   };
 
-  const getHumanPlayer = (): Player | null => {
-    return gameState?.players.find(p => p.id === 'human') || null;
+  const getPlayerAtPosition = (position: 1 | 2 | 3 | 4 | 5 | 6): Player | null => {
+    if (!gameState) return null;
+    
+    // Player 5 is always the human player
+    // Other positions are filled by bots in order
+    switch (position) {
+      case 1: return gameState.players[1] || null; // Bot 1
+      case 2: return gameState.players[2] || null; // Bot 2  
+      case 3: return gameState.players[3] || null; // Bot 3
+      case 4: return gameState.players.length > 4 ? gameState.players[4] : null; // Bot 4 (if 5+ players)
+      case 5: return gameState.players[0] || null; // Human player (always first in array)
+      case 6: return gameState.players.length > 5 ? gameState.players[5] : null; // Bot 5 (if 6 players)
+      default: return null;
+    }
+  };
+
+  const getCurrentPlayerName = (): string => {
+    if (!gameState) return '';
+    return gameState.players[gameState.currentPlayerIndex]?.name || '';
   };
 
   return (
@@ -115,11 +142,34 @@ export default function GamePage() {
             </div>
           ) : (
             /* Active Game */
-            <div className="space-y-6">
-              {/* Game Status */}
-              <div className="text-center">
-                <div className="bg-black/40 backdrop-blur-sm border border-purple-600/30 rounded-xl p-4">
-                  <div className="grid grid-cols-4 gap-4 text-sm">
+            <>
+              {/* Player Positions on Table */}
+              {[1, 2, 3, 4, 5, 6].map(position => {
+                const player = getPlayerAtPosition(position as 1 | 2 | 3 | 4 | 5 | 6);
+                if (!player) return null;
+                
+                const isHuman = player.id === 'human';
+                const isCurrent = gameState.players[gameState.currentPlayerIndex]?.id === player.id;
+                const canPlay = gameState.phase === 'playing' && isCurrent && isHuman;
+                
+                return (
+                  <PlayerPosition
+                    key={position}
+                    player={player}
+                    position={position as 1 | 2 | 3 | 4 | 5 | 6}
+                    isCurrentPlayer={isCurrent}
+                    isHumanPlayer={isHuman}
+                    onCardPlay={playCard}
+                    canPlayCards={canPlay}
+                  />
+                );
+              })}
+
+              {/* Center Game Info */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                {/* Game Status */}
+                <div className="bg-black/60 backdrop-blur-sm border border-purple-600/30 rounded-xl p-4 mb-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="text-amber-300">
                       Round: {gameState.round}/13
                     </div>
@@ -130,107 +180,70 @@ export default function GamePage() {
                       Trump: {gameState.trumpSuit || 'None'}
                     </div>
                     <div className="text-green-300">
-                      Players: {gameState.numberOfPlayers}
+                      Turn: {getCurrentPlayerName()}
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Players Info */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {gameState.players.map((player, index) => (
-                  <div key={player.id} className="bg-black/30 rounded-lg p-3 border border-purple-600/20">
-                    <div className="text-center">
-                      <div className={`font-semibold ${player.type === 'human' ? 'text-yellow-300' : 'text-blue-300'}`}>
-                        {player.name}
-                      </div>
-                      <div className="text-xs text-gray-300">
-                        Cards: {player.cards.length}
-                      </div>
-                      <div className="text-xs text-gray-300">
-                        Bid: {player.bid ?? 'None'}
-                      </div>
-                      <div className="text-xs text-gray-300">
-                        Tricks: {player.tricksWon}
-                      </div>
-                      <div className="text-xs text-gray-300">
-                        Score: {player.totalScore}
-                      </div>
-                    </div>
+                {/* Trump Card Display */}
+                {gameState.trumpCard && (
+                  <div className="mb-4">
+                    <div className="text-sm text-amber-300 mb-2">Trump Card</div>
+                    <CardComponent
+                      card={gameState.trumpCard}
+                      isRevealed={true}
+                      className="w-16 h-20 mx-auto"
+                    />
                   </div>
-                ))}
-              </div>
+                )}
 
-              {/* Bidding Phase */}
-              {gameState.phase === 'bidding' && !gameState.bids['human'] && (
-                <div className="text-center">
-                  <div className="bg-black/40 backdrop-blur-sm border border-purple-600/30 rounded-xl p-6 max-w-lg mx-auto">
-                    <h3 className="text-xl font-serif text-amber-300 mb-4">Make Your Bid</h3>
-                    <p className="text-purple-200 mb-4">
-                      How many tricks do you think you can win this round?
+                {/* Bidding Interface */}
+                {gameState.phase === 'bidding' && !gameState.players.find(p => p.id === 'human')?.bid && (
+                  <div className="bg-black/60 backdrop-blur-sm border border-purple-600/30 rounded-xl p-6">
+                    <h3 className="text-lg font-serif text-amber-300 mb-4">Make Your Bid</h3>
+                    <p className="text-purple-200 mb-4 text-sm">
+                      How many tricks do you think you can win?
                     </p>
                     <div className="flex flex-wrap justify-center gap-2">
                       {Array.from({ length: gameState.round + 1 }, (_, i) => (
                         <button
                           key={i}
                           onClick={() => makeBid(i)}
-                          className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors"
+                          className="px-3 py-1 bg-purple-700 hover:bg-purple-600 text-white font-semibold rounded transition-colors text-sm"
                         >
                           {i}
                         </button>
                       ))}
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Player Hand */}
-              {getHumanPlayer() && (
-                <div className="text-center">
-                  <h3 className="text-lg font-serif text-amber-300 mb-4">Your Hand</h3>
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {getHumanPlayer()!.cards.map((card: Card, index: number) => (
-                      <div
-                        key={card.id}
-                        onClick={() => gameState.phase === 'playing' && gameEngine?.isPlayerTurn('human') ? playCard(card.id) : null}
-                        className={gameState.phase === 'playing' && gameEngine?.isPlayerTurn('human') ? 'cursor-pointer' : ''}
-                      >
-                        <CardComponent
-                          card={card}
-                          isRevealed={true}
-                          className={gameState.phase === 'playing' && gameEngine?.isPlayerTurn('human') ? 'hover:scale-105' : ''}
-                        />
-                      </div>
-                    ))}
+                {/* Playing Phase Info */}
+                {gameState.phase === 'playing' && (
+                  <div className="bg-black/60 backdrop-blur-sm border border-purple-600/30 rounded-xl p-4">
+                    <div className="text-amber-300 text-sm">
+                      {gameState.players[gameState.currentPlayerIndex]?.id === 'human' 
+                        ? 'Your turn - click a card to play' 
+                        : `${getCurrentPlayerName()}'s turn`}
+                    </div>
                   </div>
-                </div>
-              )}
-
-              {/* Trump Card Display */}
-              {gameState.trumpCard && (
-                <div className="text-center">
-                  <h3 className="text-lg font-serif text-amber-300 mb-4">Trump Card</h3>
-                  <div className="flex justify-center">
-                    <CardComponent
-                      card={gameState.trumpCard}
-                      isRevealed={true}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Reset Game */}
-              <div className="text-center">
-                <button
-                  onClick={startNewGame}
-                  className="px-6 py-2 bg-red-700 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors"
-                >
-                  🔄 New Game
-                </button>
+                )}
               </div>
-            </div>
+            </>
           )}
         </GameTable>
+
+        {/* New Game Button - Outside table, bottom right */}
+        {gameState && (
+          <div className="fixed bottom-8 right-8">
+            <button
+              onClick={startNewGame}
+              className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors shadow-lg"
+            >
+              🔄 New Game
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

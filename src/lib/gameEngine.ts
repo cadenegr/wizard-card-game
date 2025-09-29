@@ -221,6 +221,44 @@ export class WizardGameEngine {
     return { ...this.gameState };
   }
 
+  // Process all pending bot moves in playing phase
+  processBotMoves(): GameState {
+    if (this.gameState.phase !== 'playing') {
+      return { ...this.gameState };
+    }
+
+    // Keep playing bot cards until it's human's turn or round is complete
+    while (this.gameState.phase === 'playing') {
+      const currentPlayer = this.gameState.players[this.gameState.currentPlayerIndex];
+      
+      if (currentPlayer.type === 'human') {
+        // Stop when it's human's turn
+        break;
+      }
+
+      // Bot's turn - get bot decision
+      const { BotAI } = require('./botAI');
+      const botDecision = BotAI.makeDecision(currentPlayer, { ...this.gameState }, 'play');
+      
+      if (botDecision.cardToPlay) {
+        this.playCard(currentPlayer.id, botDecision.cardToPlay.id);
+      } else {
+        // Fallback: play first valid card
+        const validCards = this.getValidCards(currentPlayer.id);
+        if (validCards.length > 0) {
+          this.playCard(currentPlayer.id, validCards[0].id);
+        }
+      }
+
+      // If round completed, break
+      if (this.gameState.phase !== 'playing') {
+        break;
+      }
+    }
+
+    return { ...this.gameState };
+  }
+
   // Check if a card can be played (following suit rules)
   private canPlayCard(player: Player, card: Card): boolean {
     const currentTrick = this.gameState.currentTrick;
@@ -388,7 +426,8 @@ export class WizardGameEngine {
     } else {
       // Prepare for next round
       this.gameState.round++;
-      this.gameState.phase = 'setup';
+      // Automatically start next round
+      this.startRound();
     }
   }
 
