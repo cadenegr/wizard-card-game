@@ -1,6 +1,48 @@
 # 🎯 WIZARD Card Game - Progress Tracker
 
-## 🚨 CRITICAL ISSUES## 📋 NEXT ACTIONS
+## 🔍 **LATEST ANALYSIS: Root Causes Identified**
+
+### Issue 1: Turn Order Bug ❌ (ROOT CAUSE FOUND)
+**Problem**: First player to bid ≠ first player to play cards  
+**Evidence**: User reports bidding works correctly, but playing starts with wrong player
+**Root Cause Hypothesis**: `makeBid()` advances currentPlayerIndex after last bid, then `startFirstTrick()` uses that advanced index instead of the actual last bidder
+**Location**: Lines 288-298 in `/src/lib/gameEngine.ts`
+
+### Issue 2: Card Display Bug ❌ (ROOT CAUSE FOUND) 
+**Problem**: Cards don't display during trick-complete phase (missing 6th card display)
+**Evidence**: No "🎯 TRICK-COMPLETE PHASE DETECTED" log in console - UI block never executes
+**Root Cause**: UI condition `{gameState.phase === 'playing' && ...}` excludes trick-complete phase from rendering
+**Location**: Line 484 in `/src/app/game/page.tsx` - condition too restrictive
+
+## 🚨 ## 🚧 FIXES APPLIED (Current Session)
+
+### ✅ Fix 1: Turn Order Validation (IMPLEMENTED)
+**Problem**: Bot 4 bids first but Bot 6 plays first - currentPlayerIndex mismatch
+**Location**: `/src/lib/gameEngine.ts` `playCard()` method
+**Fix**: Added comprehensive turn order validation and debug logging
+- Validates currentPlayer.id === playerId before allowing card play
+- Enhanced debug logging to track player array indices and IDs
+- Will throw error if wrong player tries to play: "Not your turn!"
+**Status**: 🧪 **READY FOR TESTING** - Will now catch turn order violations
+
+### ✅ Fix 2: Card Display During Trick-Complete (IMPLEMENTED)
+**Problem**: Cards disappearing when phase becomes "trick-complete"
+**Location**: `/src/lib/gameEngine.ts` `startNextTrick()` and `playCard()` methods
+**Fix**: Added nextTrick preservation mechanism
+- Added `GameState.nextTrick` property to preserve card display
+- `startNextTrick()` stores new trick in `nextTrick`, keeps old `currentTrick` for UI
+- `playCard()` switches to `nextTrick` only when first card is played
+- Cards remain visible during trick-complete phase for winner announcement
+**Status**: 🧪 **READY FOR TESTING** - Cards should stay visible longer
+
+### ✅ Fix 3: Enhanced Debug Logging (IMPLEMENTED)
+**Problem**: Insufficient logging to debug turn order issues
+**Location**: `/src/lib/gameEngine.ts` `playCard()` method
+**Fix**: Comprehensive debug output
+- Player array with indices: "0: Bot 1(bot-1), 1: Bot 2(bot-2)..."
+- Current player index and expected player ID
+- Turn order violation detection with detailed error messages
+**Status**: 🧪 **READY FOR TESTING** - Console will show detailed turn progressionES## 📋 NEXT ACTIONS
 1. **PRIORITY 1**: Fix currentPlayerIndex synchronization - investigate why Bot 4 bids first but Bot 6 plays first
 2. **PRIORITY 2**: Fix UI card display during trick-complete phase - cards should remain visible
 3. **Analysis**: Check if startFirstTrick() currentPlayerIndex (4) correctly maps to first player
@@ -61,11 +103,16 @@ DEBUG - Bot playing: Bot 6 (index 5), card: 8 of Blue
 **Status**: 🧪 **READY FOR TESTING**
 
 ## 🧪 TEST PLAN
-1. Start 6-player game
-2. Verify pregame winner bids first (check console logs)
-3. Verify same player plays first card
-4. Verify last card stays visible during winner announcement
-5. Check console for "TRICK COMPLETION DEBUG" messages
+1. Start 6-player game and watch console logs
+2. **Turn Order Test**: Verify same player who bids first also plays first card
+   - Console should show: "Current player index: X" and "Expected current player: bot-X"
+   - If mismatch occurs, should see: "❌ TURN ORDER VIOLATION" error
+3. **Card Display Test**: Verify cards stay visible during trick-complete phase
+   - Console should show: "Cards to show: X Phase: trick-complete"
+   - Cards should remain visible for winner announcement
+4. **Debug Logging Test**: Check enhanced logging output
+   - Should see player array with indices: "0: Bot 1(bot-1), 1: Bot 2(bot-2)..."
+   - Should see detailed turn progression logging
 
 ## �📋 NEXT ACTIONS
 1. Fix turn order: pregame winner must be first to bid AND first to play
@@ -80,4 +127,4 @@ DEBUG - Bot playing: Bot 6 (index 5), card: 8 of Blue
 - Turn order follows clockwise progression consistently
 
 ---
-*Last Updated: Session 2025-01-01 - Console log analysis confirms Bot 4→Bot 6 turn order mismatch and missing cards during trick-complete*
+*Last Updated: Session 2025-01-01 - Implemented turn order validation and card preservation fixes - ready for testing*

@@ -480,8 +480,8 @@ export default function GamePage() {
                   </div>
                 )}
 
-                {/* PLAYING: Show deck with trump on top and played cards area */}
-                {gameState.phase === 'playing' && (
+                {/* PLAYING/TRICK-COMPLETE: Show deck with trump on top and played cards area */}
+                {(gameState.phase === 'playing' || gameState.phase === 'trick-complete') && (
                   <>
                     {/* Left: Deck with Trump Card on top */}
                     <div className="text-center relative">
@@ -521,22 +521,40 @@ export default function GamePage() {
                           // Show cards from current trick OR last completed trick if in trick-complete phase
                           let cardsToShow: { playerId: string; card: Card }[] = [];
                           
-                          if (gameState.phase === 'trick-complete' as any) {
+                          console.log('=== CARD DISPLAY DEBUG ===');
+                          console.log('Phase:', gameState.phase);
+                          console.log('Current trick exists:', !!gameState.currentTrick);
+                          console.log('Current trick cards:', gameState.currentTrick?.cardsPlayed?.length || 0);
+                          console.log('Completed tricks:', gameState.completedTricks.length);
+                          
+                          if (gameState.phase === 'trick-complete') {
+                            console.log('🎯 TRICK-COMPLETE PHASE DETECTED');
                             // During trick-complete phase, prioritize currentTrick (which has the last cards)
                             // If currentTrick is null, fall back to completed tricks
                             if (gameState.currentTrick?.cardsPlayed) {
                               cardsToShow = gameState.currentTrick.cardsPlayed;
-                              console.log('Showing current trick cards during trick-complete:', cardsToShow.length);
+                              console.log('✅ Showing current trick cards during trick-complete:', cardsToShow.length);
                             } else if (gameState.completedTricks.length > 0) {
                               cardsToShow = gameState.completedTricks[gameState.completedTricks.length - 1].cardsPlayed || [];
-                              console.log('Showing completed trick cards during trick-complete:', cardsToShow.length);
+                              console.log('⚠️ Showing completed trick cards during trick-complete:', cardsToShow.length);
+                            } else {
+                              console.log('❌ NO CARDS AVAILABLE during trick-complete phase!');
                             }
                           } else if (gameState.currentTrick?.cardsPlayed) {
                             // Show current trick in progress
                             cardsToShow = gameState.currentTrick.cardsPlayed;
                           }
 
-                          console.log('Cards to show:', cardsToShow.length, 'Phase:', gameState.phase);
+                          console.log('Final cards to show:', cardsToShow.length, 'Phase:', gameState.phase);
+                          
+                          // DEBUG: Log what happens during trick-complete
+                          if (gameState.phase === 'trick-complete') {
+                            console.log('🔍 TRICK-COMPLETE DEBUG:');
+                            console.log('- Current trick exists:', !!gameState.currentTrick);
+                            console.log('- Current trick cards:', gameState.currentTrick?.cardsPlayed?.length || 0);
+                            console.log('- Completed tricks:', gameState.completedTricks.length);
+                            console.log('- Cards to show source:', cardsToShow.length > 0 ? 'found cards' : 'NO CARDS');
+                          }
 
                           if (cardsToShow.length > 0) {
                             return cardsToShow.map((play, index) => {

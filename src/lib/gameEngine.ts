@@ -288,9 +288,17 @@ export class WizardGameEngine {
     // Check if all players have bid
     const allBids = Object.keys(this.gameState.bids).length === this.gameState.numberOfPlayers;
     if (allBids) {
+      console.log('=== BIDDING COMPLETE DEBUG ===');
+      console.log('Last bidder index before playing:', this.gameState.currentPlayerIndex);
+      console.log('Last bidder name:', this.gameState.players[this.gameState.currentPlayerIndex]?.name);
+      console.log('All bids:', this.gameState.bids);
+      
       this.gameState.biddingComplete = true;
       this.gameState.phase = 'playing';
       this.startFirstTrick();
+      
+      console.log('First player to play index:', this.gameState.currentPlayerIndex);
+      console.log('First player to play name:', this.gameState.players[this.gameState.currentPlayerIndex]?.name);
     } else {
       // CRITICAL FIX: Advance to next player for bidding
       this.gameState.currentPlayerIndex = (this.gameState.currentPlayerIndex + 1) % this.gameState.numberOfPlayers;
