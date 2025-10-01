@@ -112,43 +112,40 @@ export default function PlayerPosition({
               className="w-8 h-12"
             />
           ) : isHumanPlayer ? (
-            // REGULAR GAME: Human shows actual cards with overlapping if multiple
-            cardCount <= 3 ? (
-              // Few cards: show normally with enhanced click feedback
-              player.cards.slice(0, 3).map((card: Card) => (
-                <CardComponent
-                  key={card.id}
-                  card={card}
-                  isRevealed={true}
-                  className={`w-6 h-9 ${
-                    isHumanTurn && gamePhase === 'playing' 
-                      ? 'cursor-pointer border-2 border-yellow-300 hover:border-yellow-200 hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-yellow-300/50' 
-                      : ''
-                  }`}
-                  onClick={isHumanTurn && gamePhase === 'playing' ? () => onCardPlay?.(card.id) : undefined}
-                />
-              ))
+            // REGULAR GAME: Human shows actual cards with overlapping for 2+ cards
+            cardCount === 1 ? (
+              // Single card: show normally
+              <CardComponent
+                key={player.cards[0].id}
+                card={player.cards[0]}
+                isRevealed={true}
+                className={`w-6 h-9 ${
+                  isHumanTurn && gamePhase === 'playing' 
+                    ? 'cursor-pointer border-2 border-yellow-300 hover:border-yellow-200 hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-yellow-300/50' 
+                    : ''
+                }`}
+                onClick={isHumanTurn && gamePhase === 'playing' ? () => onCardPlay?.(player.cards[0].id) : undefined}
+              />
             ) : (
-              // Many cards: show with overlapping
+              // Multiple cards: always use overlapping (like center board)
               <div className="relative flex justify-center" style={{ width: '80px', height: '36px' }}>
                 {player.cards.slice(0, Math.min(cardCount, 5)).map((card: Card, index) => (
                   <div
                     key={card.id}
                     className="absolute"
                     style={{ 
-                      left: `${index * 12}px`,
+                      left: `${index * 15}px`, // 15px overlap (slightly tighter than center's 25px for smaller space)
                       zIndex: index + 1
                     }}
                   >
                     <CardComponent
                       card={card}
                       isRevealed={true}
-                      className={`w-5 h-8 ${
+                      className={`w-6 h-9 ${
                         isHumanTurn && gamePhase === 'playing' 
-                          ? 'cursor-pointer border-2 border-yellow-300 hover:border-yellow-200 hover:scale-110 transition-all duration-200' 
+                          ? 'cursor-pointer border-2 border-yellow-300 hover:border-yellow-200 hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-yellow-300/50' 
                           : ''
                       }`}
-                      overlapping={true}
                       onClick={isHumanTurn && gamePhase === 'playing' ? () => onCardPlay?.(card.id) : undefined}
                     />
                   </div>
@@ -161,33 +158,31 @@ export default function PlayerPosition({
               </div>
             )
           ) : (
-            // REGULAR GAME: Bots show card backs with overlapping if multiple
-            cardCount <= 2 ? (
-              // Few cards: show normally
-              Array.from({ length: Math.min(cardCount, 2) }, (_, index) => (
-                <CardComponent
-                  key={index}
-                  card={{ 
-                    id: `back-${index}`, 
-                    type: 'number', 
-                    value: 1, 
-                    suit: 'blue',
-                    backgroundColor: '#3B82F6',
-                    textColor: '#FFFFFF'
-                  }}
-                  isRevealed={false}
-                  className="w-6 h-9"
-                />
-              ))
+            // REGULAR GAME: Bots show card backs with overlapping for 2+ cards
+            cardCount === 1 ? (
+              // Single card: show normally
+              <CardComponent
+                key={0}
+                card={{ 
+                  id: 'back-0', 
+                  type: 'number', 
+                  value: 1, 
+                  suit: 'blue',
+                  backgroundColor: '#3B82F6',
+                  textColor: '#FFFFFF'
+                }}
+                isRevealed={false}
+                className="w-6 h-9"
+              />
             ) : (
-              // Many cards: show with overlapping
-              <div className="relative flex justify-center" style={{ width: '60px', height: '36px' }}>
-                {Array.from({ length: Math.min(cardCount, 4) }, (_, index) => (
+              // Multiple cards: always use overlapping (like center board)
+              <div className="relative flex justify-center" style={{ width: '80px', height: '36px' }}>
+                {Array.from({ length: Math.min(cardCount, 5) }, (_, index) => (
                   <div
                     key={index}
                     className="absolute"
                     style={{ 
-                      left: `${index * 10}px`,
+                      left: `${index * 15}px`, // Same 15px overlap as human cards
                       zIndex: index + 1
                     }}
                   >
@@ -201,13 +196,13 @@ export default function PlayerPosition({
                         textColor: '#FFFFFF'
                       }}
                       isRevealed={false}
-                      className="w-5 h-8"
+                      className="w-6 h-9" // Same size as human cards
                     />
                   </div>
                 ))}
-                {cardCount > 4 && (
+                {cardCount > 5 && (
                   <div className="absolute right-0 top-0 bg-gray-800 text-white text-xs rounded px-1 z-20">
-                    +{cardCount - 4}
+                    +{cardCount - 5}
                   </div>
                 )}
               </div>
