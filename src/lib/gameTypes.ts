@@ -40,7 +40,7 @@ export interface Trick {
 }
 
 // Game phases
-export type GamePhase = 'setup' | 'bidding' | 'playing' | 'scoring' | 'finished';
+export type GamePhase = 'setup' | 'pregame' | 'pregame-result' | 'bidding' | 'playing' | 'trick-ready-to-complete' | 'trick-complete' | 'scoring' | 'finished';
 
 // Main game state
 export interface GameState {
@@ -67,6 +67,10 @@ export interface GameState {
   currentTrick: Trick | null;
   completedTricks: Trick[];
   cardsPlayedThisTrick: number;
+  
+  // Pregame turn order determination
+  pregameCards: { [playerId: string]: Card[] };  // cards dealt for turn order
+  turnOrderWinner: string | null;  // player who won turn order
   
   // Scoring
   roundScores: { [playerId: string]: number }[];  // score for each round
@@ -99,4 +103,7 @@ export interface GameConfig {
   botDifficulties: ('easy' | 'medium' | 'hard')[];
   playerName: string;
   maxRounds?: number;  // default 13, can be customized
+  seatConfiguration?: number[];  // which seats to fill
+  botNames?: string[];  // names for bots
+  clockwisePlayers?: { name: string; type: 'human' | 'bot' }[];  // players in clockwise order
 }

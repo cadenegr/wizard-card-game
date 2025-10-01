@@ -18,30 +18,64 @@ export class WizardGameEngine {
   private initializeGame(config: GameConfig): GameState {
     const players: Player[] = [];
     
-    // Add human player
-    players.push({
-      id: 'human',
-      name: config.playerName,
-      type: 'human',
-      cards: [],
-      bid: null,
-      tricksWon: 0,
-      totalScore: 0
-    });
-
-    // Add bot players
-    for (let i = 0; i < config.numberOfBots; i++) {
-      const difficulty = config.botDifficulties[i] || 'medium';
+    if (config.clockwisePlayers) {
+      // Use clockwise player order if provided
+      let botCounter = 1; // Track bot numbering separately
+      
+      config.clockwisePlayers.forEach((playerInfo) => {
+        if (playerInfo.type === 'human') {
+          players.push({
+            id: 'human',
+            name: playerInfo.name,
+            type: 'human',
+            cards: [],
+            bid: null,
+            tricksWon: 0,
+            totalScore: 0
+          });
+        } else {
+          players.push({
+            id: `bot-${botCounter}`,
+            name: playerInfo.name,
+            type: 'bot',
+            cards: [],
+            bid: null,
+            tricksWon: 0,
+            totalScore: 0,
+            difficulty: config.botDifficulties[botCounter - 1] || 'medium'
+          });
+          botCounter++;
+        }
+      });
+    } else {
+      // Fallback to original logic
+      // Add human player
       players.push({
-        id: `bot-${i + 1}`,
-        name: `Bot ${i + 1}`,
-        type: 'bot',
+        id: 'human',
+        name: config.playerName,
+        type: 'human',
         cards: [],
         bid: null,
         tricksWon: 0,
-        totalScore: 0,
-        difficulty: difficulty
+        totalScore: 0
       });
+
+      // Add bot players using configuration-driven names
+      const botNames = config.botNames || [];
+      for (let i = 0; i < config.numberOfBots; i++) {
+        const difficulty = config.botDifficulties[i] || 'medium';
+        const botName = botNames[i] || `Bot ${i + 1}`;  // Fallback if no name provided
+        players.push({
+          id: `bot-${i + 1}`,
+          name: botName,
+          type: 'bot',
+          cards: [],
+          bid: null,
+          tricksWon: 0,
+          totalScore: 0,
+          difficulty: difficulty
+        });
+      }
     }
 
     return {
@@ -60,12 +94,49 @@ export class WizardGameEngine {
       completedTricks: [],
       cardsPlayedThisTrick: 0,
       roundScores: [],
-      gameHistory: []
+      gameHistory: [],
+      pregameCards: {},
+      turnOrderWinner: null
     };
   }
 
   // Start a new round
   startRound(): GameState {
+    const { round } = this.gameState;
+    
+    // First round starts with pregame turn order determination
+    if (round === 1) {
+      this.startPregameTurnOrder();
+    } else {
+      this.startRegularRound();
+    }
+
+    return { ...this.gameState };
+  }
+
+  // Start pregame turn order determination
+  private startPregameTurnOrder(): void {
+    this.gameState.phase = 'pregame';
+    this.gameState.pregameCards = {};
+    this.gameState.turnOrderWinner = null;
+    
+    // Create and shuffle deck
+    this.gameState.deck = shuffleDeck(createDeck());
+    
+    // Deal one card to each player for turn order
+    this.gameState.players.forEach(player => {
+      if (this.gameState.deck.length > 0) {
+        const card = this.gameState.deck.pop()!;
+        this.gameState.pregameCards[player.id] = [card];
+      }
+    });
+    
+    // Determine turn order winner
+    this.resolveTurnOrder();
+  }
+
+  // Start regular round (after pregame)
+  private startRegularRound(): void {
     const { round } = this.gameState;
     
     // Reset round-specific state
@@ -92,9 +163,68 @@ export class WizardGameEngine {
     this.dealCards(round);
 
     // Set trump card (if not all cards dealt)
-    if (round < 13) {
-      this.setTrumpCard();
+    this.setTrumpCard();
+  }
+
+  // Resolve turn order by comparing pregame cards
+  private resolveTurnOrder(): void {
+    const players = this.gameState.players;
+    const pregameCards = this.gameState.pregameCards;
+    
+    // Find highest card value among all players
+    let highestPlayers: string[] = [];
+    let highestValue = -1;
+    
+    players.forEach(player => {
+      const cards = pregameCards[player.id];
+      if (cards && cards.length > 0) {
+        const cardValue = this.getCardTurnOrderValue(cards[cards.length - 1]);
+        if (cardValue > highestValue) {
+          highestValue = cardValue;
+          highestPlayers = [player.id];
+        } else if (cardValue === highestValue) {
+          highestPlayers.push(player.id);
+        }
+      }
+    });
+    
+    // Check for ties
+    if (highestPlayers.length > 1) {
+      // Tie! Deal another card to tied players only
+      highestPlayers.forEach(playerId => {
+        if (this.gameState.deck.length > 0) {
+          const card = this.gameState.deck.pop()!;
+          pregameCards[playerId].push(card);
+        }
+      });
+      
+      // Recursively resolve again
+      this.resolveTurnOrder();
+    } else {
+      // We have a winner!
+      this.gameState.turnOrderWinner = highestPlayers[0];
+      this.gameState.phase = 'pregame-result';
+      
+      // Set starting player index
+      const winnerIndex = players.findIndex(p => p.id === highestPlayers[0]);
+      this.gameState.currentPlayerIndex = winnerIndex;
     }
+  }
+
+  // Get card value for turn order comparison (Wizard=15, Number=face value, Jester=0)
+  private getCardTurnOrderValue(card: Card): number {
+    if (card.type === 'wizard') return 15;
+    if (card.type === 'jester') return 0;
+    return card.value || 0;
+  }
+
+  // Continue to bidding phase after pregame result
+  continueToBidding(): GameState {
+    this.gameState.phase = 'bidding';
+    
+    // Clear pregame cards and start regular round
+    this.gameState.pregameCards = {};
+    this.startRegularRound();
 
     return { ...this.gameState };
   }
@@ -160,6 +290,9 @@ export class WizardGameEngine {
       this.gameState.biddingComplete = true;
       this.gameState.phase = 'playing';
       this.startFirstTrick();
+    } else {
+      // CRITICAL FIX: Advance to next player for bidding
+      this.gameState.currentPlayerIndex = (this.gameState.currentPlayerIndex + 1) % this.gameState.numberOfPlayers;
     }
 
     return { ...this.gameState };
@@ -302,15 +435,30 @@ export class WizardGameEngine {
     const winningPlayer = this.gameState.players.find(p => p.id === winner)!;
     winningPlayer.tricksWon++;
 
+    // Set phase to show trick result (UI will handle timer and continuation)
+    this.gameState.phase = 'trick-complete';
+  }
+
+  // Continue after showing trick result
+  continueAfterTrick(): GameState {
+    if (this.gameState.phase !== 'trick-complete') {
+      throw new Error('Not in trick-complete phase');
+    }
+
     // Check if round is complete
     if (this.gameState.completedTricks.length === this.gameState.round) {
       this.completeRound();
     } else {
       // Start next trick with winner leading
+      const lastTrick = this.gameState.completedTricks[this.gameState.completedTricks.length - 1];
+      const winner = lastTrick.winner;
       const winnerIndex = this.gameState.players.findIndex(p => p.id === winner);
       this.gameState.currentPlayerIndex = winnerIndex;
       this.startNextTrick();
+      this.gameState.phase = 'playing';
     }
+
+    return { ...this.gameState };
   }
 
   // Determine winner of a trick based on WIZARD rules
