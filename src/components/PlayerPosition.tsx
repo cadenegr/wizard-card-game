@@ -113,100 +113,116 @@ export default function PlayerPosition({
             />
           ) : isHumanPlayer ? (
             // REGULAR GAME: Human shows actual cards with overlapping for 2+ cards
-            cardCount === 1 ? (
-              // Single card: show normally
-              <CardComponent
-                key={player.cards[0].id}
-                card={player.cards[0]}
-                isRevealed={true}
-                className={`w-6 h-9 ${
-                  isHumanTurn && gamePhase === 'playing' 
-                    ? 'cursor-pointer border-2 border-yellow-300 hover:border-yellow-200 hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-yellow-300/50' 
-                    : ''
-                }`}
-                onClick={isHumanTurn && gamePhase === 'playing' ? () => onCardPlay?.(player.cards[0].id) : undefined}
-              />
-            ) : (
-              // Multiple cards: always use overlapping (like center board)
-              <div className="relative flex justify-center" style={{ width: '80px', height: '36px' }}>
-                {player.cards.slice(0, Math.min(cardCount, 5)).map((card: Card, index) => (
-                  <div
-                    key={card.id}
-                    className="absolute"
-                    style={{ 
-                      left: `${index * 15}px`, // 15px overlap (slightly tighter than center's 25px for smaller space)
-                      zIndex: index + 1
-                    }}
-                  >
-                    <CardComponent
-                      card={card}
-                      isRevealed={true}
-                      className={`w-6 h-9 ${
-                        isHumanTurn && gamePhase === 'playing' 
-                          ? 'cursor-pointer border-2 border-yellow-300 hover:border-yellow-200 hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-yellow-300/50' 
-                          : ''
-                      }`}
-                      onClick={isHumanTurn && gamePhase === 'playing' ? () => onCardPlay?.(card.id) : undefined}
-                    />
-                  </div>
-                ))}
-                {cardCount > 5 && (
-                  <div className="absolute right-0 top-0 bg-gray-800 text-white text-xs rounded px-1 z-20">
-                    +{cardCount - 5}
-                  </div>
-                )}
-              </div>
-            )
+            <>
+              {cardCount === 1 ? (
+                // Single card: show normally
+                <CardComponent
+                  key={player.cards[0].id}
+                  card={player.cards[0]}
+                  isRevealed={true}
+                  className={`w-6 h-9 ${
+                    isHumanTurn && gamePhase === 'playing' 
+                      ? 'cursor-pointer border-2 border-yellow-300 hover:border-yellow-200 hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-yellow-300/50' 
+                      : ''
+                  }`}
+                  onClick={isHumanTurn && gamePhase === 'playing' ? () => onCardPlay?.(player.cards[0].id) : undefined}
+                />
+              ) : (
+                // Multiple cards: always use overlapping (like center board) with mirror symmetry
+                <div className="relative flex justify-center" style={{ width: '80px', height: '36px' }}>
+                  {player.cards.slice(0, Math.min(cardCount, 5)).map((card: Card, index) => {
+                    // Mirror symmetry: bottom seats overlap right-to-left, top seats left-to-right
+                    const cardIndex = isBottomSeat ? (Math.min(cardCount, 5) - 1 - index) : index;
+                    const leftOffset = cardIndex * 15; // 15px overlap
+                    
+                    return (
+                      <div
+                        key={card.id}
+                        className="absolute"
+                        style={{ 
+                          left: `${leftOffset}px`,
+                          zIndex: isBottomSeat ? (Math.min(cardCount, 5) - index) : (index + 1) // Reverse z-index for bottom seats
+                        }}
+                      >
+                        <CardComponent
+                          card={card}
+                          isRevealed={true}
+                          className={`w-6 h-9 ${
+                            isHumanTurn && gamePhase === 'playing' 
+                              ? 'cursor-pointer border-2 border-yellow-300 hover:border-yellow-200 hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-yellow-300/50' 
+                              : ''
+                          }`}
+                          onClick={isHumanTurn && gamePhase === 'playing' ? () => onCardPlay?.(card.id) : undefined}
+                        />
+                      </div>
+                    );
+                  })}
+                  {cardCount > 5 && (
+                    <div className="absolute right-0 top-0 bg-gray-800 text-white text-xs rounded px-1 z-20">
+                      +{cardCount - 5}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           ) : (
             // REGULAR GAME: Bots show card backs with overlapping for 2+ cards
-            cardCount === 1 ? (
-              // Single card: show normally
-              <CardComponent
-                key={0}
-                card={{ 
-                  id: 'back-0', 
-                  type: 'number', 
-                  value: 1, 
-                  suit: 'blue',
-                  backgroundColor: '#3B82F6',
-                  textColor: '#FFFFFF'
-                }}
-                isRevealed={false}
-                className="w-6 h-9"
-              />
-            ) : (
-              // Multiple cards: always use overlapping (like center board)
-              <div className="relative flex justify-center" style={{ width: '80px', height: '36px' }}>
-                {Array.from({ length: Math.min(cardCount, 5) }, (_, index) => (
-                  <div
-                    key={index}
-                    className="absolute"
-                    style={{ 
-                      left: `${index * 15}px`, // Same 15px overlap as human cards
-                      zIndex: index + 1
-                    }}
-                  >
-                    <CardComponent
-                      card={{ 
-                        id: `back-${index}`, 
-                        type: 'number', 
-                        value: 1, 
-                        suit: 'blue',
-                        backgroundColor: '#3B82F6',
-                        textColor: '#FFFFFF'
-                      }}
-                      isRevealed={false}
-                      className="w-6 h-9" // Same size as human cards
-                    />
-                  </div>
-                ))}
-                {cardCount > 5 && (
-                  <div className="absolute right-0 top-0 bg-gray-800 text-white text-xs rounded px-1 z-20">
-                    +{cardCount - 5}
-                  </div>
-                )}
-              </div>
-            )
+            <>
+              {cardCount === 1 ? (
+                // Single card: show normally
+                <CardComponent
+                  key={0}
+                  card={{ 
+                    id: 'back-0', 
+                    type: 'number', 
+                    value: 1, 
+                    suit: 'blue',
+                    backgroundColor: '#3B82F6',
+                    textColor: '#FFFFFF'
+                  }}
+                  isRevealed={false}
+                  className="w-6 h-9"
+                />
+              ) : (
+                // Multiple cards: always use overlapping (like center board) with mirror symmetry
+                <div className="relative flex justify-center" style={{ width: '80px', height: '36px' }}>
+                  {Array.from({ length: Math.min(cardCount, 5) }, (_, index) => {
+                    // Mirror symmetry: bottom seats overlap right-to-left, top seats left-to-right
+                    const cardIndex = isBottomSeat ? (Math.min(cardCount, 5) - 1 - index) : index;
+                    const leftOffset = cardIndex * 15; // Same 15px overlap as human cards
+                    
+                    return (
+                      <div
+                        key={index}
+                        className="absolute"
+                        style={{ 
+                          left: `${leftOffset}px`,
+                          zIndex: isBottomSeat ? (Math.min(cardCount, 5) - index) : (index + 1) // Reverse z-index for bottom seats
+                        }}
+                      >
+                        <CardComponent
+                          card={{ 
+                            id: `back-${index}`, 
+                            type: 'number', 
+                            value: 1, 
+                            suit: 'blue',
+                            backgroundColor: '#3B82F6',
+                            textColor: '#FFFFFF'
+                          }}
+                          isRevealed={false}
+                          className="w-6 h-9" // Same size as human cards
+                        />
+                      </div>
+                    );
+                  })}
+                  {cardCount > 5 && (
+                    <div className="absolute right-0 top-0 bg-gray-800 text-white text-xs rounded px-1 z-20">
+                      +{cardCount - 5}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
