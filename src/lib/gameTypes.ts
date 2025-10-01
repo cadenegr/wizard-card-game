@@ -65,6 +65,7 @@ export interface GameState {
   
   // Playing phase
   currentTrick: Trick | null;
+  nextTrick: Trick | null;  // Prepared next trick to preserve card display
   completedTricks: Trick[];
   cardsPlayedThisTrick: number;
   

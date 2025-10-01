@@ -91,6 +91,7 @@ export class WizardGameEngine {
       bids: {},
       biddingComplete: false,
       currentTrick: null,
+      nextTrick: null,
       completedTricks: [],
       cardsPlayedThisTrick: 0,
       roundScores: [],
@@ -300,14 +301,18 @@ export class WizardGameEngine {
 
   // Start the first trick of the round
   private startFirstTrick(): void {
+    // CRITICAL: Use the current player index from bidding (which follows pregame winner)
+    // Do NOT reset to 0 - preserve turn order from pregame
+    const leadPlayerIndex = this.gameState.currentPlayerIndex;
+    
     this.gameState.currentTrick = {
       id: `trick-${this.gameState.round}-1`,
-      leadPlayer: 0, // First player leads first trick
+      leadPlayer: leadPlayerIndex, // Use actual lead player from turn order
       cardsPlayed: [],
       winner: '',
       trumpSuit: this.gameState.trumpSuit
     };
-    this.gameState.currentPlayerIndex = 0;
+    // Keep currentPlayerIndex unchanged - it already points to the correct first player
     this.gameState.cardsPlayedThisTrick = 0;
   }
 
@@ -317,6 +322,12 @@ export class WizardGameEngine {
       throw new Error('Not in playing phase');
     }
 
+    console.log('=== PLAY CARD DEBUG ===');
+    console.log('Player attempting to play:', playerId);
+    console.log('Current player index:', this.gameState.currentPlayerIndex);
+    console.log('Expected current player:', this.gameState.players[this.gameState.currentPlayerIndex]?.id);
+    console.log('Players array:', this.gameState.players.map((p, i) => `${i}: ${p.name}(${p.id})`));
+
     const player = this.gameState.players.find(p => p.id === playerId);
     if (!player) {
       throw new Error('Player not found');
@@ -325,6 +336,20 @@ export class WizardGameEngine {
     const card = player.cards.find(c => c.id === cardId);
     if (!card) {
       throw new Error('Card not found in player hand');
+    }
+
+    // Validate turn order - player must be current player
+    const currentPlayer = this.gameState.players[this.gameState.currentPlayerIndex];
+    if (currentPlayer.id !== playerId) {
+      console.log('❌ TURN ORDER VIOLATION:', playerId, 'trying to play but current player is', currentPlayer.id);
+      throw new Error(`Not your turn! Current player is ${currentPlayer.name}`);
+    }
+
+    // If this is the first card of a new trick, switch from nextTrick to currentTrick
+    if (this.gameState.nextTrick && this.gameState.cardsPlayedThisTrick === 0) {
+      console.log('First card of new trick - switching to nextTrick for card display');
+      this.gameState.currentTrick = this.gameState.nextTrick;
+      this.gameState.nextTrick = null;
     }
 
     // Validate if card can be played (basic rule: must follow suit if possible)
@@ -428,6 +453,11 @@ export class WizardGameEngine {
     const trick = this.gameState.currentTrick!;
     const winner = this.determineTrickWinner(trick);
     
+    console.log('=== TRICK COMPLETION DEBUG ===');
+    console.log('Cards played in trick:', trick.cardsPlayed.length);
+    console.log('Trick winner:', winner);
+    console.log('Cards before completion:', trick.cardsPlayed.map(cp => `${cp.card.type}-${cp.card.value} by ${cp.playerId}`));
+    
     trick.winner = winner;
     this.gameState.completedTricks.push(trick);
 
@@ -436,7 +466,10 @@ export class WizardGameEngine {
     winningPlayer.tricksWon++;
 
     // Set phase to show trick result (UI will handle timer and continuation)
+    // IMPORTANT: Keep currentTrick intact so UI can display cards during trick-complete phase
     this.gameState.phase = 'trick-complete';
+    
+    console.log('Phase set to trick-complete, currentTrick preserved for display');
   }
 
   // Continue after showing trick result
@@ -454,6 +487,9 @@ export class WizardGameEngine {
       const winner = lastTrick.winner;
       const winnerIndex = this.gameState.players.findIndex(p => p.id === winner);
       this.gameState.currentPlayerIndex = winnerIndex;
+      
+      // IMPORTANT: Don't clear currentTrick yet - let UI continue showing cards
+      // Only clear it when new trick starts and cards are played
       this.startNextTrick();
       this.gameState.phase = 'playing';
     }
@@ -515,7 +551,9 @@ export class WizardGameEngine {
   private startNextTrick(): void {
     const trickNumber = this.gameState.completedTricks.length + 1;
     
-    this.gameState.currentTrick = {
+    // IMPORTANT: Don't clear currentTrick immediately - let UI continue showing previous cards
+    // Only replace currentTrick when first card of new trick is played
+    const newTrick = {
       id: `trick-${this.gameState.round}-${trickNumber}`,
       leadPlayer: this.gameState.currentPlayerIndex,
       cardsPlayed: [],
@@ -523,7 +561,11 @@ export class WizardGameEngine {
       trumpSuit: this.gameState.trumpSuit
     };
     
+    // Store new trick data but keep old currentTrick for UI display
+    this.gameState.nextTrick = newTrick;
     this.gameState.cardsPlayedThisTrick = 0;
+    
+    console.log('Next trick prepared, old currentTrick preserved for display');
   }
 
   // Complete the current round and calculate scores
