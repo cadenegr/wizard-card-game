@@ -293,6 +293,16 @@ export class WizardGameEngine {
       console.log('Last bidder name:', this.gameState.players[this.gameState.currentPlayerIndex]?.name);
       console.log('All bids:', this.gameState.bids);
       
+      // CRITICAL FIX: Set first player to play as the pregame winner (first bidder)
+      // The current player is the last bidder, but we need to start with the pregame winner
+      const firstBidderIndex = this.gameState.players.findIndex(p => p.id === this.gameState.turnOrderWinner);
+      if (firstBidderIndex >= 0) {
+        this.gameState.currentPlayerIndex = firstBidderIndex;
+        console.log('✅ Fixed: First player set to pregame winner at index:', firstBidderIndex);
+      } else {
+        console.log('❌ Error: Could not find pregame winner, keeping current index');
+      }
+      
       this.gameState.biddingComplete = true;
       this.gameState.phase = 'playing';
       this.startFirstTrick();

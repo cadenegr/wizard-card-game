@@ -1,18 +1,18 @@
 # 🎯 WIZARD Card Game - Progress Tracker
 
-## 🔍 **LATEST ANALYSIS: Root Causes Identified**
+## 🎉 **BREAKTHROUGH: Issues Resolved!**
 
-### Issue 1: Turn Order Bug ❌ (ROOT CAUSE FOUND)
-**Problem**: First player to bid ≠ first player to play cards  
-**Evidence**: User reports bidding works correctly, but playing starts with wrong player
-**Root Cause Hypothesis**: `makeBid()` advances currentPlayerIndex after last bid, then `startFirstTrick()` uses that advanced index instead of the actual last bidder
-**Location**: Lines 288-298 in `/src/lib/gameEngine.ts`
+### ✅ Issue 1: Card Display Bug - FIXED! ✅
+**Problem**: Cards disappearing during trick-complete phase  
+**Root Cause**: UI condition `{gameState.phase === 'playing' && ...}` excluded trick-complete phase
+**Fix Applied**: Changed to `(gameState.phase === 'playing' || gameState.phase === 'trick-complete')`
+**Status**: ✅ **CONFIRMED WORKING** - User reports "the last card displayed"
 
-### Issue 2: Card Display Bug ❌ (ROOT CAUSE FOUND) 
-**Problem**: Cards don't display during trick-complete phase (missing 6th card display)
-**Evidence**: No "🎯 TRICK-COMPLETE PHASE DETECTED" log in console - UI block never executes
-**Root Cause**: UI condition `{gameState.phase === 'playing' && ...}` excludes trick-complete phase from rendering
-**Location**: Line 484 in `/src/app/game/page.tsx` - condition too restrictive
+### 🔧 Issue 2: Turn Order Bug - FIX APPLIED
+**Problem**: Turn is "one behind" the bidder - playing starts with wrong player
+**Root Cause**: `makeBid()` advances currentPlayerIndex after last bid, but should start with pregame winner
+**Fix Applied**: Reset currentPlayerIndex to pregame winner (turnOrderWinner) when bidding completes
+**Status**: 🧪 **READY FOR TESTING** - Should now start with correct player
 
 ## 🚨 ## 🚧 FIXES APPLIED (Current Session)
 
@@ -102,17 +102,16 @@ DEBUG - Bot playing: Bot 6 (index 5), card: 8 of Blue
 **Fix**: Added comprehensive debug logging, preserved `currentTrick` during `trick-complete` phase
 **Status**: 🧪 **READY FOR TESTING**
 
-## 🧪 TEST PLAN
+## 🧪 **TEST PLAN FOR TURN ORDER FIX**
 1. Start 6-player game and watch console logs
-2. **Turn Order Test**: Verify same player who bids first also plays first card
-   - Console should show: "Current player index: X" and "Expected current player: bot-X"
-   - If mismatch occurs, should see: "❌ TURN ORDER VIOLATION" error
-3. **Card Display Test**: Verify cards stay visible during trick-complete phase
-   - Console should show: "Cards to show: X Phase: trick-complete"
-   - Cards should remain visible for winner announcement
-4. **Debug Logging Test**: Check enhanced logging output
-   - Should see player array with indices: "0: Bot 1(bot-1), 1: Bot 2(bot-2)..."
-   - Should see detailed turn progression logging
+2. **Bidding Phase**: Note which player bids first (should be pregame winner)
+3. **Playing Phase**: Check console for:
+   - "=== BIDDING COMPLETE DEBUG ===" 
+   - "Last bidder index before playing: X"
+   - "✅ Fixed: First player set to pregame winner at index: Y"
+   - "First player to play index: Y" (should match pregame winner)
+4. **Verify**: Same player who bid first should play first card
+5. **Success Criteria**: "First player to play" should be the pregame winner, not the next player
 
 ## �📋 NEXT ACTIONS
 1. Fix turn order: pregame winner must be first to bid AND first to play
